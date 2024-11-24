@@ -40,6 +40,7 @@ services:
       - ./ros_workspace:/home/laboratorio/ros_workspace
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ${XAUTHORITY:-0}:/root/.Xauthority
+      - /run/user/1000/wayland-0:/run/user/1000/wayland-0
       - /dev:/dev
     tmpfs:
       - /dev/shm:rw
@@ -48,6 +49,7 @@ services:
       - LD_LIBRARY_PATH=/usr/local/nvidia/lib64
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - XDG_RUNTIME_DIR=/run/user/1000
     deploy:
       resources:
         reservations:
