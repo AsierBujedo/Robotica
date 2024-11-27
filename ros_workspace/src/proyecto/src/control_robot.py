@@ -7,8 +7,17 @@ from moveit_commander import MoveGroupCommander, RobotCommander, roscpp_initiali
 from std_msgs.msg import Int32
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from math import pi
+from influx import InfluxDBHandler
+from datetime import datetime
 
 class ControlRobot:
+    influx_handler = InfluxDBHandler(
+        url="https://deusto-influxdb-001-v2qrmk5znqme3f.eu-west-1.timestream-influxdb.amazonaws.com:8086",
+        token="ySWNrRMtO_PmWPyxsWns5jRU8_EzSjBlK4IgfAsepArgbSv6UxGYXXkoMQb0ZdXUqrIRELV0TcD1x4udlW900Q==",
+        org="Grupo_6",
+        bucket="Grupo_6"
+    )
+
     def __init__(self) -> None:
         # Inicialización de ROS y MoveIt
         roscpp_initialize(sys.argv)
@@ -29,22 +38,22 @@ class ControlRobot:
     def handle_command(self, msg: Int32) -> None:
         # Acción a realizar en función de la orden recibida
         command = msg.data
-        if command == Command.COGER_FRUTA:
+        if command == Command.COGER_FRUTA.value:
             rospy.loginfo("Coger fruta")
             self.move_to_specific_position("coger_fruta")
-        elif command == Command.POSICION_INICIAL:
+        elif command == Command.POSICION_INICIAL.value:
             rospy.loginfo("Posición inicial")
             self.move_to_specific_position("posicion_inicial")
-        elif command == Command.CAJA_BUENA_ARRIBA:
+        elif command == Command.CAJA_BUENA_ARRIBA.value:
             rospy.loginfo("Caja 1 arriba")
             self.move_to_specific_position("caja_1_arriba")
-        elif command == Command.CAJA_BUENA_ABAJO:
+        elif command == Command.CAJA_BUENA_ABAJO.value:
             rospy.loginfo("Caja 1 abajo")
             self.move_to_specific_position("caja_1_abajo")
-        elif command == Command.CAJA_MALA_ARRIBA:
+        elif command == Command.CAJA_MALA_ARRIBA.value:
             rospy.loginfo("Caja 2 arriba")
             self.move_to_specific_position("caja_2_arriba")
-        elif command == Command.CAJA_MALA_ABAJO:
+        elif command == Command.CAJA_MALA_ABAJO.value:
             rospy.loginfo("Caja 2 abajo")
             self.move_to_specific_position("caja_2_abajo")
         else:
@@ -118,7 +127,6 @@ class ControlRobot:
             rospy.logwarn("No se pudo ejecutar la trayectoria completa")
 
     def move_to_specific_position(self, action: str) -> None:
-
         joints = {
             "coger_fruta": [0.6133421063423157, -0.7791211170009156, 0.6027692000018519, -1.4883136761239548, -1.5353906790362757, 0.5786222219467163],
             "posicion_inicial": [1.0743645429611206, -0.9983374041369935, 0.4319809118853968, -1.0997422498515625, -1.5645702520953577, -0.11793691316713506],
@@ -130,11 +138,51 @@ class ControlRobot:
 
         if action in joints:
             self.move_to_configuration(joints[action])
+            
+            traceability_code = self.generate_traceability_code()
+            metrics = self.collect_robot_metrics(traceability_code=traceability_code)
+            self.influx_handler.write_data("robot_metrics", [
+                {
+                    "TraceabilityCode": metrics["TraceabilityCode"],
+                    "VelocityValues": metrics["VelocityValues"],
+                    "VelocityUnits": metrics["VelocityUnits"],
+                    "RotationValues": metrics["RotationValues"],
+                    "RotationUnits": metrics["RotationUnits"],
+                    "TorqueValues": metrics["TorqueValues"],
+                    "TorqueUnits": metrics["TorqueUnits"]
+                }
+            ])
+
+    def collect_robot_metrics(self, traceability_code): 
+        joint_positions = self.move_group.get_current_joint_values()
+        velocity_values = [0.1] * len(joint_positions)  
+        torque_values = [0.2] * len(joint_positions) 
+        
+        return {
+            "TraceabilityCode": traceability_code,
+            "VelocityValues": velocity_values,
+            "VelocityUnits": "rad/s",
+            "RotationValues": joint_positions,
+            "RotationUnits": "rad",
+            "TorqueValues": torque_values,
+            "TorqueUnits": "N·m"
+        }
+
+    def generate_traceability_code(self) -> str:
+        now = datetime.now()
+        year = now.strftime("%y") 
+        julian_day = now.strftime("%j") 
+        time_part = now.strftime("%H%M%S") 
+        return f"{year}{julian_day}{time_part}"
+    
+    def close(self) -> None:
+        self.influx_handler.close()
 
 if __name__ == '__main__':
     try:
         control = ControlRobot()
-        control.move_to_specific_position("coger_fruta")
         rospy.spin()
+
+        control.close()
     except rospy.ROSInterruptException:
         pass
