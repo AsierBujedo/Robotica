@@ -15,14 +15,11 @@ class InfluxDBHandler:
         for entry in data:
             point = Point(measurement)
             for key, value in entry.items():
-                print(f"Writing {key} -> {value}")
                 if isinstance(value, (int, float)):
                     point = point.field(key, value)
-                    print(f"Writing {key} -> {value} -> {point}")
                 else:
                     point = point.tag(key, value)
             points.append(point)
-        print(f"Writing {points}")
         self.write_api.write(bucket=self.bucket, record=points)
 
     def close(self):
