@@ -5,10 +5,25 @@ import rospy
 from commands import Command
 from moveit_commander import MoveGroupCommander, RobotCommander, roscpp_initialize, PlanningSceneInterface
 from std_msgs.msg import Int32
+from control_msgs.msg import GripperCommandAction, GripperCommandGoal, GripperCommandResult
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from math import pi
 from influx import InfluxDBHandler
 from datetime import datetime
+
+import sys
+import copy
+import rospy
+from moveit_commander import MoveGroupCommander, RobotCommander, roscpp_initialize, PlanningSceneInterface
+import moveit_msgs.msg
+from math import pi, tau, dist, fabs, cos
+from std_msgs.msg import String
+from moveit_commander.conversions import pose_to_list
+from typing import List
+from geometry_msgs.msg import Pose, PoseStamped
+from control_msgs.msg import GripperCommandAction, GripperCommandGoal, GripperCommandResult
+from actionlib import SimpleActionClient
+
 
 class ControlRobot:
     influx_handler = InfluxDBHandler(
@@ -28,6 +43,7 @@ class ControlRobot:
         self.scene = PlanningSceneInterface()
         self.group_name = "robot"
         self.move_group = MoveGroupCommander(self.group_name)
+        self.gripper_action_client = SimpleActionClient("rg2_action_server", GripperCommandAction)
         
         # Añadir el obstáculo suelo
         self.add_floor()
@@ -56,6 +72,10 @@ class ControlRobot:
         elif command == Command.CAJA_MALA_ABAJO.value:
             rospy.loginfo("Caja 2 abajo")
             self.move_to_specific_position("caja_2_abajo")
+        elif command == Command.ABRIR_PINZA.value:
+            self.mover_pinza(100.0, 40.0)
+        elif command == Command.CERRAR_PINZA.value:
+            self.mover_pinza(0.0, 40.0)
         else:
             rospy.logwarn("Comando no reconocido")
 
@@ -89,6 +109,16 @@ class ControlRobot:
 
         self.move_group.stop()
         self.move_group.clear_pose_targets()
+
+    def mover_pinza(self, anchura_dedos: float, fuerza: float) -> bool:
+        goal = GripperCommandGoal()
+        goal.command.position = anchura_dedos
+        goal.command.max_effort = fuerza
+        self.gripper_action_client.send_goal(goal)
+        self.gripper_action_client.wait_for_result()
+        result = self.gripper_action_client.get_result()
+        
+        return result.reached_goal
 
     def move_to_configuration(self, joints) -> None:
         if self.move_group.go(joints, wait=True):
@@ -186,3 +216,5 @@ if __name__ == '__main__':
         control.close()
     except rospy.ROSInterruptException:
         pass
+
+# suscribir al topic de joint states para las medidas

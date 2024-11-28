@@ -9,6 +9,8 @@ class Command(Enum):
     CAJA_BUENA_ABAJO = 3
     CAJA_MALA_ARRIBA = 4
     CAJA_MALA_ABAJO = 5
+    ABRIR_PINZA = 6
+    CERRAR_PINZA = 7
 
     @staticmethod
     def is_command(value: int) -> bool:
@@ -37,10 +39,12 @@ class CommandQueue:
     def flush(self) -> None:
         rospy.loginfo("Sending new command queue")
         self.send(Command.POSICION_INICIAL)
+        self.send(Command.ABRIR_PINZA)
 
         for command in self.queue:
             self.send(command)
         
         self.send(Command.POSICION_INICIAL)
+        self.send(Command.ABRIR_PINZA)
 
         self.queue.clear()
