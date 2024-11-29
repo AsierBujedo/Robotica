@@ -36,7 +36,7 @@ class ControlRobot:
         
         # Suscribirse a topics
         rospy.Subscriber("/consignas", Int32, self.handle_command)
-        rospy.Subscriber("/joint_states", JointState, self.handle_joint_states)
+        rospy.Subscriber("/joint_state_v2", JointState, self.handle_joint_states)
 
         # Añadir el obstáculo suelo
         self.add_floor()
@@ -75,10 +75,10 @@ class ControlRobot:
         joint_velocities = list(msg.velocity) if msg.velocity else []
         joint_efforts = list(msg.effort) if msg.effort else []
 
-        # Log para confirmar que los valores no están vacíos
-        rospy.loginfo(f"Posiciones: {joint_positions}")
-        rospy.loginfo(f"Velocidades: {joint_velocities}")
-        rospy.loginfo(f"Torques: {joint_efforts}")
+        is_moving = any(abs(vel) > 0 for vel in joint_velocities)
+
+        if not is_moving:
+            return  
 
         traceability_code = self.generate_traceability_code()
 

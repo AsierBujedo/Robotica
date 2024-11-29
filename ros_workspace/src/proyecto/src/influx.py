@@ -14,13 +14,21 @@ class InfluxDBHandler:
         points = []
         for entry in data:
             point = Point(measurement)
+
             for key, value in entry.items():
-                if isinstance(value, (int, float)):
+                if isinstance(value, list) and key.endswith("Values"):
+                    for i, sublist in enumerate(value):
+                        for j, subvalue in enumerate(sublist):
+                            point = point.field(f"{key}_axis{i+1}_value{j+1}", subvalue)
+                elif isinstance(value, (int, float)):
                     point = point.field(key, value)
-                else:
+                elif isinstance(value, str):
                     point = point.tag(key, value)
+
             points.append(point)
+
         self.write_api.write(bucket=self.bucket, record=points)
+
 
     def close(self):
         self.client.close()
