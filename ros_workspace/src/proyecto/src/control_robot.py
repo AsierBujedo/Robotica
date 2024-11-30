@@ -92,6 +92,8 @@ class ControlRobot:
             "TorqueUnits": "N·m"
         }
 
+        print(metrics)
+
         self.influx_handler.write_data("robot_metrics", [
             {
                 "TraceabilityCode": metrics["TraceabilityCode"],
@@ -135,8 +137,7 @@ class ControlRobot:
 
         if action in joints:
             self.move_group.go(joints[action], wait=True)
-            self.move_group.stop()
-
+            
     def mover_pinza(self, anchura_dedos: float, fuerza: float) -> bool:
         goal = GripperCommandGoal()
         goal.command.position = anchura_dedos

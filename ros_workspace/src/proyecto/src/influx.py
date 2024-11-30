@@ -29,6 +29,5 @@ class InfluxDBHandler:
 
         self.write_api.write(bucket=self.bucket, record=points)
 
-
     def close(self):
         self.client.close()
