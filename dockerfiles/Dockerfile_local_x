@@ -15,11 +15,13 @@ RUN apt update && apt install -y rviz \
          ros-noetic-usb-cam \
          htop \
          sudo \
-         libxmlrpc-core-c3-dev
+         libxmlrpc-core-c3-dev \
+         nano
 
 RUN pip install catkin_tools \
                 tensorboard \
-                ur_rtde
+                ur_rtde \
+                influxdb_client
 
 RUN rm -rf /var/lib/apt/lists/* && \
     groupadd -g 1000 laboratorio && \
