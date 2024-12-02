@@ -36,7 +36,7 @@ class ControlRobot:
         
         # Suscribirse a topics
         rospy.Subscriber("/consignas", Int32, self.handle_command)
-        rospy.Subscriber("/joint_state_v2", JointState, self.handle_joint_states)
+        rospy.Subscriber("/joint_states", JointState, self.handle_joint_states)
 
         # Añadir el obstáculo suelo
         self.add_floor()
