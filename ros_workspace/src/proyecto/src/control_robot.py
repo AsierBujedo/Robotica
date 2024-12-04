@@ -69,6 +69,8 @@ class ControlRobot:
         else:
             rospy.logwarn("Comando no reconocido")
 
+        rospy.sleep(1)
+
     def handle_joint_states(self, msg: JointState) -> None:
 
         joint_positions = list(msg.position) if msg.position else []
@@ -78,7 +80,7 @@ class ControlRobot:
         is_moving = any(abs(vel) > 0 for vel in joint_velocities)
 
         if not is_moving:
-            return  
+            return
 
         traceability_code = self.generate_traceability_code()
 
