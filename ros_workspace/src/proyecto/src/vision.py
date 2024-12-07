@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import mahotas as mh
+import math
+
 
 
 #Ajustar el brillo y el contraste
