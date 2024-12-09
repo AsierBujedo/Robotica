@@ -24,7 +24,7 @@ class CommandQueue:
 
     def __init__(self) -> None:
         rospy.init_node('nodo_ordenes', anonymous=True)
-        self.pub = rospy.Publisher('/consignas', Int32, queue_size=10)
+        self.pub = rospy.Publisher('/consignas', Int32, queue_size=20)
         self.rate = rospy.Rate(1)
 
     def push(self, command: Command) -> None:
@@ -38,13 +38,13 @@ class CommandQueue:
 
     def flush(self) -> None:
         rospy.loginfo("Sending new command queue")
-        self.send(Command.POSICION_INICIAL)
-        self.send(Command.ABRIR_PINZA)
+        # self.send(Command.POSICION_INICIAL)
+        # self.send(Command.ABRIR_PINZA)
 
         for command in self.queue:
             self.send(command)
         
-        self.send(Command.POSICION_INICIAL)
-        self.send(Command.ABRIR_PINZA)
+        # self.send(Command.POSICION_INICIAL)
+        # self.send(Command.ABRIR_PINZA)
 
         self.queue.clear()
