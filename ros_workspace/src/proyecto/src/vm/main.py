@@ -2,7 +2,8 @@ import cv2
 from vision import *
 import math
 from model_predictor import *
-#from controller import *
+#from ..controller import *
+
 
 # Cargar modelos
 clf, le = load_models('random_forest_model.pkl', 'label_encoder.pkl')
