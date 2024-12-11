@@ -23,7 +23,7 @@ def poner_caja_mala():
     queue.push(Command.POSICION_INICIAL)
     queue.push(Command.ABRIR_PINZA)
     queue.push(Command.COGER_FRUTA)
-    queue.push(Command.CERRAR_PINZA)
+    queue.push(Command.CERRAR_PINZA_MALA)
     queue.push(Command.CAJA_MALA_ARRIBA)
     queue.push(Command.CAJA_MALA_ABAJO)
     queue.push(Command.ABRIR_PINZA)
