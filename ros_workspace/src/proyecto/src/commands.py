@@ -11,6 +11,8 @@ class Command(Enum):
     CAJA_MALA_ABAJO = 5
     ABRIR_PINZA = 6
     CERRAR_PINZA = 7
+    CERRAR_PINZA_MALA = 8
+
 
     @staticmethod
     def is_command(value: int) -> bool:

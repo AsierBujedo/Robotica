@@ -63,13 +63,18 @@ class ControlRobot:
             rospy.loginfo("Caja 2 abajo")
             self.move_to_specific_position("caja_2_abajo")
         elif command == Command.ABRIR_PINZA.value:
+            rospy.loginfo("Abrir pinza")
             self.mover_pinza(100.0, 40.0)
         elif command == Command.CERRAR_PINZA.value:
             self.mover_pinza(0.0, 40.0)
+            rospy.loginfo("Cerrar pinza")
+        elif command == Command.CERRAR_PINZA_MALA.value:
+            rospy.loginfo("Cerrar pinza lentamente")
+            self.mover_pinza(0.0, 20.0)
         else:
             rospy.logwarn("Comando no reconocido")
 
-        rospy.sleep(1)
+        rospy.sleep(1) # Change if necessary
 
     def handle_joint_states(self, msg: JointState) -> None:
 
@@ -139,7 +144,8 @@ class ControlRobot:
 
         if action in joints:
             self.move_group.go(joints[action], wait=True)
-            
+
+    # Check the doc out http://docs.ros.org/en/hydro/api/ric_mc/html/GripperCommand_8h_source.html for GripperCommandGoal     
     def mover_pinza(self, anchura_dedos: float, fuerza: float) -> bool:
         goal = GripperCommandGoal()
         goal.command.position = anchura_dedos
