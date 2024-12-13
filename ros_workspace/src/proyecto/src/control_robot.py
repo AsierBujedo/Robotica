@@ -64,13 +64,14 @@ class ControlRobot:
             self.move_to_specific_position("caja_2_abajo")
         elif command == Command.ABRIR_PINZA.value:
             rospy.loginfo("Abrir pinza")
-            self.mover_pinza(100.0, 40.0)
+            self.mover_pinza(100.0, 10.0)
         elif command == Command.CERRAR_PINZA.value:
-            self.mover_pinza(0.0, 40.0)
+            self.mover_pinza(0.0, 10.0)
             rospy.loginfo("Cerrar pinza")
         elif command == Command.CERRAR_PINZA_MALA.value:
             rospy.loginfo("Cerrar pinza lentamente")
-            self.mover_pinza(0.0, 20.0)
+            self.mover_pinza(0.0, 10.0)
+            rospy.sleep(2)
         else:
             rospy.logwarn("Comando no reconocido")
 
