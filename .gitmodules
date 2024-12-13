@@ -1,0 +1,3 @@
+[submodule "ros_workspace/Robotica-AI"]
+	path = ros_workspace/Robotica-AI
+	url = https://github.com/AsierBujedo/Robotica-AI
