@@ -42,10 +42,16 @@ Para el uso personal fuera del laboratorio se recomienda utilizar el contenedor 
 
 2. **Construir y Lanzar los Contenedores:**
 
-   Desde la raíz del proyecto, ejecuta:
+   Desde la raíz del proyecto debe construirse el contenedor, para eso debe ejecutarse:
 
    ```bash
-   docker-compose up
+   sudo docker-compose --profile {PROFILE} build
+   ```
+
+   y luego lanzarse:
+
+   ```bash
+   sudo docker-compose --profile {PROFILE} up -d
    ```
 
    Esto construirá las imágenes Docker (si no se han construido previamente) y lanzárá los contenedores necesarios para el sistema.
@@ -65,11 +71,13 @@ Para el uso personal fuera del laboratorio se recomienda utilizar el contenedor 
    Una vez dentro del contenedor, navega al directorio `ros_workspace` y ejecuta:
 
    ```bash
+   cd ~/ros_workspace
    source setup.sh
    ```
 
    Este script realiza lo siguiente:
 
+   - Automatiza las acciones que deben llevarse a cabo para preparar ROS (rosdep update, catkin build...)
    - Define los alias necesarios para el proyecto:
      - `launch_robot`: Alias para lanzar el entorno del robot.
      - `launch_sim`: Alias para lanzar el simulador.
@@ -84,7 +92,7 @@ El nodo de análisis de frutas evalúa si las frutas son buenas o malas utilizan
    Antes de ejecutar el nodo, especifica las siguientes variables de entorno:
 
    ```bash
-   export ROS_MASTER_URI=http://{IP_NODO_MAESTRO}:{PUERTO}
+   export ROS_MASTER_URI=http://{IP_NODO_MAESTRO}:11311
    export ROS_IP={IP_LOCAL}
    ```
 
@@ -118,7 +126,7 @@ El nodo controlador del robot se encarga de mover las frutas a las cajas corresp
    Asegúrte de configurar las mismas variables que en el nodo de frutas:
 
    ```bash
-   export ROS_MASTER_URI=http://{IP_NODO_MAESTRO}:{PUERTO}
+   export ROS_MASTER_URI=http://{IP_NODO_MAESTRO}:11311
    export ROS_IP={IP_LOCAL}
    ```
 
@@ -169,7 +177,7 @@ Esto abrirá el simulador y permitirá probar el sistema sin necesidad de hardwa
    - Verifica que Docker y Docker Compose estén correctamente instalados y configurados.
    - Reinicia los contenedores con:
      ```bash
-     docker-compose down && docker-compose --profile local up
+     docker-compose down && docker-compose --profile {PROFILE} up
      ```
 
 ---
