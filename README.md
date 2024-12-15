@@ -1,28 +1,13 @@
-# Robótica y Automatización Inteligente - Entorno de desarrollo
+# Proyecto de Robótica: Clasificación de Frutas
 
-Este repositorio proporciona un entorno de trabajo basado en ROS (Robot Operating System) para la asignatura de Robótica y Automatización Inteligente del Máster de Computación y Sistemas Inteligentes en la Universidad de Deusto. El entorno está empaquetado en contenedores Docker para asegurar la portabilidad y facilidad de uso.
+Este proyecto implementa un sistema robótico que clasifica frutas según su calidad (buenas o malas) utilizando ROS (Robot Operating System), algoritmos de visión por computadora y aprendizaje automático. El sistema consta de dos nodos principales: uno que analiza la calidad de las frutas y otro que controla el robot para mover las frutas a la caja correspondiente.
 
-## Herramientas Utilizadas
-
-Antes de comenzar, asegúrate de tener instaladas las siguientes herramientas:
-
-1. [Docker](https://www.docker.com/get-started): Docker es una plataforma para desarrollar, ejecutar y enviar aplicaciones dentro de contenedores. Puedes seguir [estas instrucciones](https://docs.docker.com/get-docker/) para instalar Docker en tu sistema.
-
-2. [Visual Studio Code](https://code.visualstudio.com/): Utilizaremos VSCode para desarrollar dentro de los contenedores utilizando la extensión de [Remote - Containers](https://code.visualstudio.com/docs/remote/containers). Puedes instalar VSCode desde [aquí](https://code.visualstudio.com/download).
-
-3. [Extensión Remote - Containers de VSCode](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers): Permite conectar VSCode a entornos de desarrollo que se ejecutan en contenedores Docker. Puedes instalarla desde el [marketplace de VSCode](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
-
-4. [Git](https://git-scm.com/): Git es un sistema de control de versiones que utilizaremos para clonar este repositorio y gestionar versiones de código. Sigue [estas instrucciones](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) para instalar Git en tu sistema.
-
-
-Opcionalmente, si trabajas en Linux, tienes una tarjeta gráfica NVIDIA y tu distribución utiliza el sistema de ventanas basado en X, puedes conseguir aceleración por GPU instalando:
-
--  [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html): Si planeas utilizar GPU para tus aplicaciones, necesitarás el soporte de GPU en Docker. Sigue la [guía de instalación de NVIDIA](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) para habilitar esta funcionalidad.
+---
 
 ## Requisitos del Sistema
 
-- **Linux/macOS/Windows**: Docker y VSCode son compatible con todas estas plataformas, aunque algunas características pueden variar.
-- **GPU** (opcional): Para aprovechar la aceleración de hardware, asegúrate de tener una GPU NVIDIA compatible y los drivers instalados.
+- **Linux/macOS/Windows**: Docker y VSCode son compatibles con todas estas plataformas, aunque algunas características pueden variar.
+- **GPU (opcional)**: Para aprovechar la aceleración de hardware, asegúrate de tener una GPU NVIDIA compatible y los drivers instalados.
 
 ## Contenedores Disponibles
 
@@ -33,102 +18,162 @@ Este repositorio incluye los siguientes contenedores:
 3. **local**: Un entorno local sin soporte para GPU, para usar en entornos sin aceleración de hardware.
 
 Los contenedores 2 y 3 están desarrollados para ser utilizados en los PCs del laboratorio de robótica. Sólo se pueden utilizar si se cumplen los siguientes requisitos:
+
 - El sistema operativo host es Linux (o WSL).
-- El sistema operativo host utiliza el sistema de ventanax X.
-- (versión GPU) El sistema tiene una gráfica NVIDIA con el nvidia-container-toolkit y sus drivers instalados.
+- El sistema operativo host utiliza el sistema de ventanas X.
+- (Versión GPU) El sistema tiene una gráfica NVIDIA con el `nvidia-container-toolkit` y sus drivers instalados.
 
 Para el uso personal fuera del laboratorio se recomienda utilizar el contenedor **desktop**.
-## Instalación
 
-### 1. Clonar este repositorio
+---
 
-Clona este repositorio en tu máquina local:
+## Configuración y Ejecución
+
+### 1. Configurar el Entorno
+
+1. **Clonar el Repositorio:**
+
+   Clona el repositorio principal junto con el submódulo:
+
+   ```bash
+   git clone --recurse-submodules https://github.com/AsierBujedo/Robotica.git
+   cd Robotica
+   ```
+
+2. **Construir y Lanzar los Contenedores:**
+
+   Desde la raíz del proyecto, ejecuta:
+
+   ```bash
+   docker-compose up
+   ```
+
+   Esto construirá las imágenes Docker (si no se han construido previamente) y lanzárá los contenedores necesarios para el sistema.
+
+3. **Ingresar al Contenedor:**
+
+   Accede al contenedor donde se encuentra configurado el entorno ROS:
+
+   ```bash
+   docker exec -it nombre_contenedor bash
+   ```
+
+   Sustituye `nombre_contenedor` por el nombre del contenedor adecuado.
+
+4. **Inicializar el Entorno dentro del Contenedor:**
+
+   Una vez dentro del contenedor, navega al directorio `ros_workspace` y ejecuta:
+
+   ```bash
+   source setup.sh
+   ```
+
+   Este script realiza lo siguiente:
+
+   - Define los alias necesarios para el proyecto:
+     - `launch_robot`: Alias para lanzar el entorno del robot.
+     - `launch_sim`: Alias para lanzar el simulador.
+   - Configura variables de entorno necesarias para el correcto funcionamiento.
+
+### 2. Iniciar el Nodo de Análisis de Frutas
+
+El nodo de análisis de frutas evalúa si las frutas son buenas o malas utilizando algoritmos de aprendizaje automático.
+
+1. **Configurar las Variables de Entorno:**
+
+   Antes de ejecutar el nodo, especifica las siguientes variables de entorno:
+
+   ```bash
+   export ROS_MASTER_URI=http://{IP_NODO_MAESTRO}:{PUERTO}
+   export ROS_IP={IP_LOCAL}
+   ```
+
+   - `{IP_NODO_MAESTRO}`: Dirección IP del nodo maestro de ROS.
+   - `{PUERTO}`: Puerto utilizado por el nodo maestro (por defecto, 11311).
+   - `{IP_LOCAL}`: Dirección IP de la máquina local.
+
+2. **Instalar Dependencias:**
+
+   Cambia al directorio del submódulo `Robotica-AI` e instala las dependencias necesarias:
+
+   ```bash
+   cd ros_workspace/Robotica-AI
+   pip install -r requirements.txt
+   ```
+
+3. **Ejecutar el Nodo de Análisis:**
+
+   Lanza el nodo ejecutando el archivo principal:
+
+   ```bash
+   python src
+   ```
+
+### 3. Controlar el Robot
+
+El nodo controlador del robot se encarga de mover las frutas a las cajas correspondientes según el análisis recibido del nodo de frutas.
+
+1. **Configurar las Variables de Entorno:**
+
+   Asegúrte de configurar las mismas variables que en el nodo de frutas:
+
+   ```bash
+   export ROS_MASTER_URI=http://{IP_NODO_MAESTRO}:{PUERTO}
+   export ROS_IP={IP_LOCAL}
+   ```
+
+2. **Lanzar el Robot:**
+
+   Utiliza el alias definido en `setup.sh` para lanzar el robot:
+
+   ```bash
+   launch_robot
+   ```
+
+3. **Iniciar el Nodo de Controlador:**
+
+   Ejecuta el script del nodo controlador:
+
+   ```bash
+   python control_robot.py
+   ```
+
+### 4. Lanzar el Simulador
+
+Para probar el sistema en un entorno simulado, utiliza el alias `launch_sim`:
 
 ```bash
-git clone https://github.com/ignacioDeusto/ros1_mucsi.git
-```
-```bash
-cd ros1_mucsi
+launch_sim
 ```
 
-### 2. Construir la imagen de los contenedores
-Depende del contenedor que se quiera utilizar, construir uno u otro (`local`, `local_gpu`, `desktop`). Se recomienda utilizar utilizar el contenedor `desktop` para uso personal y `local_gpu` en el laboratorio.
+Esto abrirá el simulador y permitirá probar el sistema sin necesidad de hardware físico.
 
-Una vez elegido el contenedor ejecutar:
-```bash
-docker compose --profile <nombre_contenedor_elegido> build
-```
-Cuando acabe el proceso ya se dispondrá de la imagen construida en el sistema.
-### 3. Lanzar el contenedor
-Una vez construida la imagen es posible crear contenedores a partir de ella. En este caso los contenedores están diseñados para utilizarlos como entornos de desarrollo. Se recomienda crear y utilizar un solo contenedor. Para esto ejecutar:
-```bash
-docker compose --profile <nombre_contenedor_elegido> up
-```
-Una vez lanzado, la terminal se mantendrá ejecutando el contenedor hasta que se pare. Para pararlo basta con enviar una señal de terminación `ctrl`+`c`.
+---
 
-Es posible y recomendable gestionar el lanzamiento y parada de los contenedores desde la extensión remote de VSCode. Para gestionar la parada y lanzamiento de los contenedores ya creados desde VSCode:
-<p align="center">
-    <img src="pictures/encender_contenedor.gif" alt="lanzar">
-</p>
+## Solución de Problemas
 
-### 4. Acceso al contenedor
-Es posible acceder al contenedor creado de varias maneras:
-- Si el contenedor utilizado es el `desktop`, desde cualquier navegador se puede acceder a él en [esta dirección](http://localhost:6081). **La contraseña es laboratorio**. En esta dirección se sirve un escritorio funcional completo.
-- Para todos los contenedores se recomienda asociar una instancia de VSCode al contenedor utilizando la extension "remote explorer". Esto permite desarrollar en VSCode como si se trabajara en local, pero ejecutando todo en el contenedor.
+1. **El nodo no puede conectarse al nodo maestro:**
 
-Incluso si se utiliza el contenedor `desktop` se recomienda desarrollar y lanzar todo desde VSCode y utilizar el escritorio para ver la salida gráfica del sistema. Para conectarse al contenedor desde VSCode:
-<p align="center">
-    <img src="pictures/conectarse_contenedor_vscode.gif" alt="Conectarse">
-</p>
+   - Verifica que las variables `ROS_MASTER_URI` y `ROS_IP` están configuradas correctamente.
+   - Asegúrate de que la dirección IP y el puerto del nodo maestro sean accesibles.
 
-### 5. Primeros pasos en ROS
-Dentro de los contenedores se incluye un espacio de trabajo de ROS con todos los elementos necesarios para poder trabajar con los robots del laboratorio.
+2. **Errores de dependencias en el nodo de frutas:**
 
-Antes de poder utilizarlos es necesario construir el espacio de trabajo base. Para construir el espacio de trabajo:
+   - Asegúrte de que todas las dependencias están instaladas ejecutando:
+     ```bash
+     pip install -r requirements.txt
+     ```
 
-1. Conectarse al contenedor desde una instancia de VSCode.
-2. Abrir una nueva terminal en VSCode.
-3. Navegar hasta el directorio base del espacio de trabajo:
-```bash
-cd /home/laboratorio/ros_workspace
-```
-4. Actualizar la lista de paquetes disponibles del sistema:
-```bash
-sudo apt update
-```
-5. Actualizar el gestor de paquetes de ROS:
-```bash
-rosdep update
-```
-6. Instalar todas las dependencias del espacio de trabajo base:
-```bash
-rosdep install --from-paths src --ignore-src -r -y
-```
-7. Construir el espacio de trabajo:
-```bash
-catkin build
-```
-Si todo se ha ejecutado de manera correcta, el espacio de trabajo ya está en condiciones de uso.
+3. **Problemas con Docker:**
 
-Antes de poder utilizar el espacio de trabajo hay que activarlo en la terminal:
-```bash
-source /home/laboratorio/ros_workspace/devel/setup.bash
-```
->**IMPORTANTE:**
-**<u>La activación del espacio de trabajo se debe realizar en cada nueva terminal abierta en la que se quiera utilizar algo relacionado con este.</u>**
+   - Verifica que Docker y Docker Compose estén correctamente instalados y configurados.
+   - Reinicia los contenedores con:
+     ```bash
+     docker-compose down && docker-compose --profile local up
+     ```
 
-Si siempre se va a utilizar el mismo espacio de trabajo, es posible incluir la activación en el fichero `/home/laboratorio/.bashrc` que se ejecuta cada vez que se abre una nueva terminal. Si se incluye, no hace falta volver a activar el espacio de trabajo.
+---
 
-Para comprobar que el sistema funciona correctamente, ejecutar en la terminal donde se ha activado el espacio de trabajo:
-```bash
-roslaunch launcher_robots_lab_robotica sim_203.launch
-```
-Esto debería ejecutar todos los nodos necesarios para poder controlar uno de los Universal Robots en simulación. Debería aparecer una interfaz gráfica en la que se muestra el robot y si se selecciona el grupo de planificación `robot`, debería permitir moverlo a diferentes posiciones, planificar y ejecutar trayectorias.
+## Documentación Adicional
 
-El control de los robots se realizará utilizando el framework MoveIt! que abstrae los topics de ROS y proporciona funcionalidades para planificar y ejecutar trayectorias además de gestionar la escena de planificación. Se puede encontrar documentación extensa de su API de Python [aquí](https://moveit.github.io/moveit_tutorials/doc/move_group_python_interface/move_group_python_interface_tutorial.html).
-### Aspectos a considerar en el desarrollo
-
-- Todo lo que se instale, ejecute y modifique a partir de la creación se pierde si el contenedor se elimina. Si el contenedor se para en vez de eliminarlo, mantendrán todas las modificaciones hechas cuando se vuelva a lanzar.
-- Los contenedores comparten un directorio con el host. Todo cambio que se haga en este desde el contenedor se verá reflejado en el host y viceversa. Este directorio en el contenedor es: `/home/laboratorio/ros_workspace` y en el host depende de donde y cómo se haya creado el contenedor.
-- No confundir el host con el contenedor (estarán en instancias separadas de VSCode).
-- No lanzar docker compose down. Si se lanza, el contenedor se eliminará.
+Para obtener información más detallada sobre el sistema y las funcionalidades adicionales, consulta los archivos README dentro de cada subdirectorio del proyecto o el wiki asociado al repositorio en GitHub.
