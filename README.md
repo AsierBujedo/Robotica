@@ -179,6 +179,60 @@ Esto abrirá el simulador y permitirá probar el sistema sin necesidad de hardwa
      ```bash
      docker-compose down && docker-compose --profile {PROFILE} up
      ```
+---
+
+
+## Descripción Detallada de los Archivos Principales
+
+### Explicación del Flujo del Sistema
+
+El sistema robótico implementado en este proyecto sigue un flujo de trabajo claramente definido para lograr la clasificación de frutas:
+
+1. **Nodo de Órdenes** (`debug.py`):
+   - El usuario puede interactuar directamente con el sistema a través de un menú interactivo.
+   - Este nodo permite enviar comandos individuales (como mover el robot a la posición inicial o abrir/cerrar la pinza) o ejecutar tareas completas como clasificar frutas buenas y malas.
+   - Los comandos se publican en el topic `/consignas`.
+
+2. **Control del Robot** (`control_robot.py`):
+   - Este nodo escucha los comandos publicados en `/consignas` y realiza las acciones necesarias utilizando MoveIt para planificar movimientos seguros del robot.
+   - Adicionalmente, registra métricas de rendimiento en una base de datos InfluxDB para trazabilidad.
+
+3. **Ejecución de Comandos** (`commands.py` y `controller.py`):
+   - Los comandos específicos del robot (como `COGER_FRUTA` o `CAJA_BUENA_ARRIBA`) se definen en `commands.py` y se gestionan mediante colas en `CommandQueue`.
+   - `controller.py` utiliza estas colas para definir y ejecutar flujos de trabajo completos, como mover una fruta a la caja correspondiente.
+
+4. **Gestión de Métricas** (`influx.py`):
+   - Este módulo registra las métricas del robot (posiciones, velocidades, esfuerzos, etc.) en InfluxDB para monitoreo y análisis posterior.
+
+---
+
+### 1. `commands.py`
+Este archivo define los comandos utilizados para controlar el robot y su sistema de colas. Contiene:
+- **Clase `Command`**: Enumera los comandos disponibles, como `COGER_FRUTA`, `POSICION_INICIAL`, entre otros.
+- **Clase `CommandQueue`**: Implementa una cola para gestionar y enviar comandos al robot mediante ROS, publicando en el topic `/consignas`.
+
+### 2. `control_robot.py`
+Este archivo implementa la clase principal para controlar el robot mediante ROS y MoveIt. Funciones destacadas:
+- **`handle_command`**: Escucha los comandos publicados en `/consignas` y ejecuta acciones específicas, como mover a posiciones predefinidas o manipular la pinza.
+- **`add_floor` y `add_box_to_planning_scene`**: Añaden objetos a la escena de planificación para evitar colisiones.
+- **`mover_pinza`**: Controla la apertura y cierre de la pinza.
+- **Integración con InfluxDB**: Registra métricas del robot, como velocidades y esfuerzos, en una base de datos para trazabilidad.
+
+### 3. `controller.py`
+Define funciones de alto nivel para ejecutar tareas completas utilizando `CommandQueue`:
+- **`poner_caja_buena`**: Lleva una fruta a la caja de frutas buenas.
+- **`poner_caja_mala`**: Lleva una fruta a la caja de frutas malas.
+
+### 4. `debug.py`
+Un script interactivo para probar y depurar el sistema:
+- Permite al usuario seleccionar comandos manualmente o ejecutar funciones como `poner_caja_buena` o `poner_caja_mala`.
+- Publica comandos en `/consignas` o llama a funciones del controlador directamente.
+
+### 5. `influx.py`
+Proporciona una clase para interactuar con InfluxDB:
+- **`write_data`**: Escribe datos en la base de datos InfluxDB con soporte para múltiples campos y etiquetas.
+- **`close`**: Cierra la conexión con InfluxDB.
+
 
 ---
 
